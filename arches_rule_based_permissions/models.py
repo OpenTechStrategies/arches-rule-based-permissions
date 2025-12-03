@@ -15,10 +15,10 @@ class RuleConfig(models.Model):
     type = models.CharField(max_length=200)
     active = models.BooleanField(default=True)
     name = models.TextField(default="I need a unique name")
-    nodegroup = models.ForeignKey(
-        NodeGroup, on_delete=models.DO_NOTHING, db_column="nodegroupid"
-    )
-    node = models.ForeignKey(Node, on_delete=models.DO_NOTHING, db_column="nodeid")
+    # nodegroup = models.ForeignKey(
+    #     NodeGroup, on_delete=models.DO_NOTHING, db_column="nodegroupid"
+    # )
+    # node = models.ForeignKey(Node, on_delete=models.DO_NOTHING, db_column="nodeid")
     value = models.JSONField(null=True)
     groups = models.ManyToManyField(Group, related_name="groups", related_query_name="group")
     actions = models.JSONField(default = actions_default) # "read, create, update, delete"
@@ -26,7 +26,7 @@ class RuleConfig(models.Model):
     class Meta:
         managed = True
         db_table = "rule_config"
-    
+        
     def __str__(self):
         return f"{self.name}"
     

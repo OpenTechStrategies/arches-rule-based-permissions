@@ -21,41 +21,6 @@ class PermissionRules:
     def __init__(self):
         self.configs = RuleConfig.objects.all()
 
-    def filter_tile_has_value(
-        self, rule_config: RuleConfig, user, filter="db", qs=None
-    ):
-        node_id = rule_config.node.nodeid
-        nodegroup_id = rule_config.nodegroup.nodegroupid
-        value = rule_config.value["value"]
-        if filter == "db":
-            nodegroups = [nodegroup_id]
-            tiles = (
-                models.TileModel.objects.filter(
-                    resourceinstance=OuterRef("resourceinstanceid"),
-                    nodegroup_id__in=nodegroups,
-                )
-                .annotate(
-                    node=KT(f"data__{node_id}"),
-                )
-                .filter(Q(node=value))
-            )
-            return models.ResourceInstance.objects.filter(
-                Q(Exists(tiles)) | Q(principaluser_id=user.id)
-            )
-        else:
-            documents = Bool()
-            string_factory = DataTypeFactory().get_instance("concept")
-            val = {"op": "~", "val": value, "lang": "en"}
-            string_factory.append_search_filters(
-                val, models.Node.objects.get(nodeid=node_id), documents, HttpRequest()
-            )
-            result = Bool()
-            result.must(Nested(path="tiles", query=documents))
-            return result
-
-    def filter_tile_does_not_have_value(self, filter="db", actions=[], qs=None):
-        pass
-
     def filter_resource_has_lifecycle_state(
         self, rule_config: RuleConfig, user, filter="db", qs=None
     ):
@@ -137,8 +102,6 @@ class PermissionRules:
 
     def permission_handler(self, user, actions=["view_resourceinstance"], filter="db"):
         filters = {
-            "filter_tile_has_value": self.filter_tile_has_value,
-            "filter_tile_does_not_have_value": self.filter_tile_does_not_have_value,
             "filter_resource_has_lifecycle_state": self.filter_resource_has_lifecycle_state,
             "filter_tile_spatial": self.filter_tile_spatial,
         }

@@ -58,8 +58,6 @@ class ArchesFilteredPermissionFramework(ArchesDefaultDenyPermissionFramework):
     ) -> list[str]:
 
         filters = {
-            "filter_tile_has_value": self.rules.filter_tile_has_value,
-            "filter_tile_does_not_have_value": self.rules.filter_tile_does_not_have_value,
             "filter_resource_has_lifecycle_state": self.rules.filter_resource_has_lifecycle_state,
             "filter_tile_spatial": self.rules.filter_tile_spatial,
         }
