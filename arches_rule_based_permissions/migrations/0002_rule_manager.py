@@ -24,7 +24,7 @@ class Migration(migrations.Migration):
         Plugin(
             pluginid=PLUGIN_ID,
             name=I18n_String("Permission Rule Manager"),
-            icon="fa fa-lock",
+            icon="fa fa-shield",
             component="views/components/plugins/rule-config-manager",
             componentname="rule-config-manager",
             config={"show": True},
