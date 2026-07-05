@@ -78,6 +78,13 @@ const TYPE_OPTIONS = [
     { label: $gettext("Resource has lifecycle state"), value: "filter_resource_has_lifecycle_state" },
 ];
 
+const TYPE_LABELS: Record<string, string> = {
+    filter_tile_has_value: $gettext("Tile has value"),
+    filter_tile_does_not_have_value: $gettext("Tile does not have value"),
+    filter_resource_has_lifecycle_state: $gettext("Resource has lifecycle state"),
+    filter_tile_spatial: $gettext("Tile spatial"),
+};
+
 const createDisabled = computed(() => {
     if (newRuleType.value === "filter_tile_has_value") {
         return !newRuleNode.value || !newRuleActions.value.length;
@@ -284,13 +291,16 @@ async function handleDelete(rule: RuleConfig) {
                     role="img"
                     :aria-label="rule.active ? $gettext('Active') : $gettext('Inactive')"
                 />
-                <span class="rule-name">{{ rule.name }}</span>
+                <span class="rule-info">
+                    <span class="rule-name">{{ rule.name }}</span>
+                    <span class="rule-type">{{ TYPE_LABELS[rule.type] ?? rule.type }}</span>
+                </span>
                 <Button
                     icon="fa fa-trash"
                     :aria-label="$gettext('Delete rule %{name}', { name: rule.name }, true)"
                     severity="danger"
                     text
-                    size="small"
+                    size="large"
                     @click="confirmDelete(rule, $event)"
                 />
             </div>
@@ -473,7 +483,7 @@ async function handleDelete(rule: RuleConfig) {
 
 .rule-list-item {
     display: flex;
-    align-items: center;
+    align-items: baseline;
     padding: 0.75rem 1rem;
     cursor: pointer;
     gap: 0.5rem;
@@ -506,7 +516,22 @@ async function handleDelete(rule: RuleConfig) {
 }
 
 .rule-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.rule-info {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    gap: 0.1rem;
+}
+
+.rule-type {
+    font-size: 0.9em;
+    color: var(--p-text-muted-color);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
