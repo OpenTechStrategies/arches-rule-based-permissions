@@ -4,10 +4,8 @@ import { useGettext } from "vue3-gettext";
 import { useToast } from "primevue/usetoast";
 
 import Button from "primevue/button";
-import Checkbox from "primevue/checkbox";
 import InputText from "primevue/inputtext";
 import MultiSelect from "primevue/multiselect";
-import Tag from "primevue/tag";
 
 import RuleParamsTileHasValue from "@/rule_based_perms/components/RuleParamsTileHasValue.vue";
 import RuleParamsLifecycleState from "@/rule_based_perms/components/RuleParamsLifecycleState.vue";
@@ -77,11 +75,13 @@ const selectedGroupIds = ref<number[]>(
     selectedRule.value.groups.map((g) => g.id),
 );
 const isSaving = ref(false);
+const originalActive = ref(selectedRule.value.active);
 
 // Reset form when a different rule is selected.
 watch(selectedRule, (newRule) => {
     formData.value = cloneRule(newRule);
     selectedGroupIds.value = newRule.groups.map((g) => g.id);
+    originalActive.value = newRule.active;
     setIsEditing(false);
 });
 
@@ -116,7 +116,7 @@ async function handleSave() {
     try {
         const updated = await updateRuleConfig(selectedRule.value.id, {
             name: formData.value.name,
-            active: formData.value.active,
+            active: selectedRule.value.active,
             node_id: formData.value.node_id,
             nodegroup_id: formData.value.nodegroup_id,
             value: formData.value.value,
@@ -127,6 +127,7 @@ async function handleSave() {
         Object.assign(selectedRule.value, updated);
         formData.value = cloneRule(updated);
         selectedGroupIds.value = updated.groups.map((g: AuthGroup) => g.id);
+        originalActive.value = updated.active;
         setIsEditing(false);
         await loadRules();
         toast.add({
@@ -148,6 +149,7 @@ async function handleSave() {
 
 function handleCancel() {
     formData.value = cloneRule(selectedRule.value);
+    selectedRule.value.active = originalActive.value;
     selectedGroupIds.value = selectedRule.value.groups.map((g) => g.id);
     setIsEditing(false);
 }
@@ -157,41 +159,15 @@ function handleCancel() {
     <div class="rule-editor">
         <!-- Rule identity -->
         <section class="form-section">
-
-            <div class="form-row" style="align-items: flex-end">
-                <div class="form-field" style="flex: 1; margin-bottom: 0">
-                    <label for="rule-name">{{ $gettext("Name") }}</label>
-                    <InputText
-                        id="rule-name"
-                        v-model="formData.name"
-                        style="width: 100%"
-                        @update:model-value="setIsEditing(true)"
-                    />
-                </div>
-
-                <div class="form-field checkbox-field" style="margin-bottom: 0">
-                    <Checkbox
-                        v-model="formData.active"
-                        input-id="rule-active"
-                        binary
-                        @update:model-value="setIsEditing(true)"
-                    />
-                    <label for="rule-active">{{ $gettext("Active") }}</label>
-                    <Tag
-                        v-if="formData.active"
-                        :value="$gettext('Active')"
-                        severity="success"
-                        style="font-size: x-small"
-                    />
-                    <Tag
-                        v-else
-                        :value="$gettext('Inactive')"
-                        severity="secondary"
-                        style="font-size: x-small"
-                    />
-                </div>
+            <div class="form-field">
+                <label for="rule-name">{{ $gettext("Name") }}</label>
+                <InputText
+                    id="rule-name"
+                    v-model="formData.name"
+                    style="width: 100%"
+                    @update:model-value="setIsEditing(true)"
+                />
             </div>
-
         </section>
 
         <!-- Type-specific parameters -->
@@ -266,22 +242,6 @@ function handleCancel() {
 
 .form-field:last-child {
     margin-bottom: 0;
-}
-
-.checkbox-field {
-    flex-direction: row;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0;
-}
-
-.form-row {
-    display: flex;
-    gap: 1rem;
-}
-
-.form-row .form-field {
-    flex: 1;
 }
 
 label,

@@ -5,8 +5,10 @@ import { useGettext } from "vue3-gettext";
 import ProgressSpinner from "primevue/progressspinner";
 import Splitter from "primevue/splitter";
 import SplitterPanel from "primevue/splitterpanel";
+import Tag from "primevue/tag";
+import ToggleSwitch from "primevue/toggleswitch";
 
-import { selectedRuleKey } from "@/rule_based_perms/constants.ts";
+import { selectedRuleKey, isEditingKey } from "@/rule_based_perms/constants.ts";
 
 import RuleList from "@/rule_based_perms/components/RuleList.vue";
 import RuleEditor from "@/rule_based_perms/components/RuleEditor.vue";
@@ -20,6 +22,11 @@ const { $gettext } = useGettext();
 const { selectedRule } = inject<{ selectedRule: Ref<RuleConfig | null> }>(
     selectedRuleKey,
 )!;
+
+const { setIsEditing } = inject<{
+    isEditing: Ref<boolean>;
+    setIsEditing: (val: boolean) => void;
+}>(isEditingKey)!;
 
 const TYPE_LABELS: Record<string, string> = {
     filter_tile_has_value: "Tile Has Value",
@@ -44,7 +51,26 @@ const TYPE_LABELS: Record<string, string> = {
             style="display: flex; flex-direction: column; overflow: hidden"
         >
             <div v-if="selectedRule" class="editor-panel-header">
-                {{ TYPE_LABELS[selectedRule.type] ?? selectedRule.type }}
+                <span>{{ TYPE_LABELS[selectedRule.type] ?? selectedRule.type }}</span>
+                <div class="header-active">
+                    <ToggleSwitch
+                        v-model="selectedRule.active"
+                        input-id="header-rule-active"
+                        @update:model-value="setIsEditing(true)"
+                    />
+                    <Tag
+                        v-if="selectedRule.active"
+                        :value="$gettext('Active')"
+                        severity="success"
+                        style="font-size: x-small"
+                    />
+                    <Tag
+                        v-else
+                        :value="$gettext('Inactive')"
+                        severity="secondary"
+                        style="font-size: x-small"
+                    />
+                </div>
             </div>
             <div style="flex: 1; overflow-y: auto; margin: 0 0 4rem 1rem; padding-right: 2rem">
                 <RuleSplash v-if="!selectedRule" />
@@ -69,11 +95,23 @@ const TYPE_LABELS: Record<string, string> = {
 }
 
 .editor-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     padding: 0.75rem 1.5rem;
-    background: var(--p-surface-100);
+    background: var(--p-surface-50);
     border-bottom: 1px solid var(--p-surface-200);
     font-size: larger;
-    font-weight: 500;
+    font-weight: 550;
     flex-shrink: 0;
+}
+
+.header-active {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: small;
+    font-weight: 600;
+    color: var(--p-text-muted-color);
 }
 </style>

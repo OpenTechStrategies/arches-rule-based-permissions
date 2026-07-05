@@ -509,6 +509,7 @@ async function handleDelete(rule: RuleConfig) {
     border-radius: 50%;
     background: var(--p-surface-400);
     flex-shrink: 0;
+    margin: .5rem;
 }
 
 .active-indicator.active {
@@ -527,6 +528,7 @@ async function handleDelete(rule: RuleConfig) {
     flex-direction: column;
     overflow: hidden;
     gap: 0.1rem;
+    padding-bottom: 0.6rem;
 }
 
 .rule-type {
