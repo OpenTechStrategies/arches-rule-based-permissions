@@ -17,9 +17,9 @@ class RuleConfig(models.Model):
     active = models.BooleanField(default=True)
     name = models.TextField(default="I need a unique name")
     nodegroup = models.ForeignKey(
-        NodeGroup, on_delete=models.DO_NOTHING, db_column="nodegroupid"
+        NodeGroup, on_delete=models.DO_NOTHING, db_column="nodegroupid", null=True, blank=True
     )
-    node = models.ForeignKey(Node, on_delete=models.DO_NOTHING, db_column="nodeid")
+    node = models.ForeignKey(Node, on_delete=models.DO_NOTHING, db_column="nodeid", null=True, blank=True)
     value = models.JSONField(null=True)
     groups = models.ManyToManyField(
         Group, related_name="groups", related_query_name="group"

@@ -3,8 +3,24 @@ from django.conf.urls.static import static
 from django.conf.urls.i18n import i18n_patterns
 from django.urls import include, path
 
+from arches_rule_based_permissions.views import (
+    GroupOptionsView,
+    NodeOptionsView,
+    RuleConfigsView,
+    RuleConfigView,
+)
+
 urlpatterns = [
-    # project-level urls
+    path("api/rule_configs", RuleConfigsView.as_view(), name="rule_configs"),
+    path(
+        "api/rule_configs/<uuid:rule_id>",
+        RuleConfigView.as_view(),
+        name="rule_config",
+    ),
+    path("api/rule_config_nodes", NodeOptionsView.as_view(), name="rule_config_nodes"),
+    path(
+        "api/rule_config_groups", GroupOptionsView.as_view(), name="rule_config_groups"
+    ),
 ]
 
 # Ensure Arches core urls are superseded by project-level urls
