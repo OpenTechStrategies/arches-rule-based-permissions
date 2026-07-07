@@ -18,8 +18,10 @@ import json
 
 class PermissionRules:
 
-    def __init__(self):
-        self.configs = RuleConfig.objects.all()
+    @property
+    def configs(self):
+        # Ensure rule config queryset is refreshed from DB when a config is changed
+        return RuleConfig.objects.all()
 
     def filter_tile_has_value(
         self, rule_config: RuleConfig, user, filter="db", qs=None
