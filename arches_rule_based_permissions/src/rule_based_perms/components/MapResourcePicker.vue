@@ -6,6 +6,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 
 const props = defineProps<{
     modelValue: string | null | undefined;
+    customGeojson?: object | null;
 }>();
 
 const emit = defineEmits<{
@@ -23,6 +24,17 @@ const FILL_OUTLINE_LAYER = "geoms-fill-outline";
 const LINE_LAYER = "geoms-line";
 const CIRCLE_LAYER = "geoms-circle";
 const CLICKABLE_LAYERS = [FILL_LAYER, LINE_LAYER, CIRCLE_LAYER];
+
+const CUSTOM_SOURCE = "custom-geom";
+const CUSTOM_FILL_LAYER = "custom-fill";
+const CUSTOM_FILL_OUTLINE_LAYER = "custom-fill-outline";
+const CUSTOM_LINE_LAYER = "custom-line";
+const CUSTOM_CIRCLE_LAYER = "custom-circle";
+
+function wrapGeomAsFC(geom: object | null | undefined): { type: string; features: object[] } {
+    if (!geom) return { type: "FeatureCollection", features: [] };
+    return { type: "FeatureCollection", features: [{ type: "Feature", geometry: geom, properties: {} }] };
+}
 
 // Data-driven paint expressions that highlight the selected resource.
 function fillColor(id?: string | null) {
@@ -108,6 +120,46 @@ function addLayersToMap(id?: string | null) {
     });
 
     layersReady = true;
+
+    // Custom user-entered GeoJSON geometry (amber/orange)
+    map!.addSource(CUSTOM_SOURCE, {
+        type: "geojson",
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        data: wrapGeomAsFC(props.customGeojson) as any,
+    });
+    map!.addLayer({
+        id: CUSTOM_FILL_LAYER,
+        type: "fill",
+        source: CUSTOM_SOURCE,
+        filter: ["match", ["geometry-type"], ["Polygon", "MultiPolygon"], true, false],
+        paint: { "fill-color": "#f59e0b", "fill-opacity": 0.35 },
+    });
+    map!.addLayer({
+        id: CUSTOM_FILL_OUTLINE_LAYER,
+        type: "line",
+        source: CUSTOM_SOURCE,
+        filter: ["match", ["geometry-type"], ["Polygon", "MultiPolygon"], true, false],
+        paint: { "line-color": "#b45309", "line-width": 2 },
+    });
+    map!.addLayer({
+        id: CUSTOM_LINE_LAYER,
+        type: "line",
+        source: CUSTOM_SOURCE,
+        filter: ["match", ["geometry-type"], ["LineString", "MultiLineString"], true, false],
+        paint: { "line-color": "#b45309", "line-width": 2 },
+    });
+    map!.addLayer({
+        id: CUSTOM_CIRCLE_LAYER,
+        type: "circle",
+        source: CUSTOM_SOURCE,
+        filter: ["match", ["geometry-type"], ["Point", "MultiPoint"], true, false],
+        paint: {
+            "circle-color": "#f59e0b",
+            "circle-radius": 7,
+            "circle-stroke-width": 2,
+            "circle-stroke-color": "#b45309",
+        },
+    });
 
     for (const layer of CLICKABLE_LAYERS) {
         map!.on("click", layer, (e) => {
@@ -200,6 +252,16 @@ onMounted(() => {
 });
 
 watch(() => props.modelValue, (newId) => updateLayerStyles(newId));
+
+watch(() => props.customGeojson, (geom) => {
+    if (!map || !layersReady) return;
+    const fc = wrapGeomAsFC(geom);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (map!.getSource(CUSTOM_SOURCE) as maplibregl.GeoJSONSource).setData(fc as any);
+    if (geom && fc.features.length) {
+        fitToFeatures(fc as { features: { geometry: unknown }[] });
+    }
+});
 
 onBeforeUnmount(() => {
     map?.remove();

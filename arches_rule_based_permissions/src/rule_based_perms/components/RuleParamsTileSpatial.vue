@@ -68,6 +68,7 @@ const geojsonText = computed({
             <label>{{ $gettext("Resource") }}</label>
             <MapResourcePicker
                 v-model="params.resource_instance_id"
+                :custom-geojson="params.geojson"
                 @update:model-value="setIsEditing(true)"
             />
         </div>
