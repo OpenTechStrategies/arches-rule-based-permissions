@@ -6,6 +6,7 @@ from django.urls import include, path
 from arches_rule_based_permissions.views import (
     GroupOptionsView,
     NodeOptionsView,
+    ResourceGeometriesView,
     RuleConfigsView,
     RuleConfigView,
 )
@@ -20,6 +21,11 @@ urlpatterns = [
     path("api/rule_config_nodes", NodeOptionsView.as_view(), name="rule_config_nodes"),
     path(
         "api/rule_config_groups", GroupOptionsView.as_view(), name="rule_config_groups"
+    ),
+    path(
+        "api/rule_config_geometries",
+        ResourceGeometriesView.as_view(),
+        name="rule_config_geometries",
     ),
 ]
 

@@ -2,10 +2,11 @@ import json
 import uuid
 
 from django.contrib.auth.models import Group
+from django.contrib.gis.db.models.functions import AsGeoJSON, Transform
 from django.http import JsonResponse
 from django.views import View
 
-from arches.app.models.models import Node
+from arches.app.models.models import GeoJSONGeometry, Node
 
 from arches_rule_based_permissions.models import RuleConfig
 
@@ -140,3 +141,33 @@ class GroupOptionsView(View):
             [{"id": g.id, "name": g.name} for g in groups],
             safe=False,
         )
+
+
+class ResourceGeometriesView(View):
+    def get(self, request):
+        from django.conf import settings as django_settings
+
+        geoms = (
+            GeoJSONGeometry.objects.select_related("resourceinstance")
+            .exclude(resourceinstance_id=django_settings.SYSTEM_SETTINGS_RESOURCE_ID)
+            .annotate(geojson=AsGeoJSON(Transform("geom", 4326)))
+        )
+
+        features = []
+        for geom in geoms:
+            if not geom.geojson:
+                continue
+            ri = geom.resourceinstance
+            name = str(ri.name) if ri.name else str(ri.resourceinstanceid)
+            features.append(
+                {
+                    "type": "Feature",
+                    "geometry": json.loads(geom.geojson),
+                    "properties": {
+                        "resource_instance_id": str(ri.resourceinstanceid),
+                        "name": name,
+                    },
+                }
+            )
+
+        return JsonResponse({"type": "FeatureCollection", "features": features})

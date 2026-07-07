@@ -76,6 +76,7 @@ const TYPE_OPTIONS = [
     { label: $gettext("Tile has value"), value: "filter_tile_has_value" },
     { label: $gettext("Tile does not have value"), value: "filter_tile_does_not_have_value" },
     { label: $gettext("Resource has lifecycle state"), value: "filter_resource_has_lifecycle_state" },
+    { label: $gettext("Tile spatial"), value: "filter_tile_spatial" },
 ];
 
 const TYPE_LABELS: Record<string, string> = {
@@ -164,10 +165,20 @@ async function handleCreate() {
                 value: { value: states } as unknown as RuleValue,
                 actions: ["view_resourceinstance"],
             };
+        } else if (newRuleType.value === "filter_tile_spatial") {
+            payload = {
+                name: baseName,
+                type: "filter_tile_spatial",
+                active: true,
+                node_id: null,
+                nodegroup_id: null,
+                value: { geojson: null, op: "intersects", resource_instance_id: null } as unknown as RuleValue,
+                actions: ["view_resourceinstance"],
+            };
         } else {
             payload = {
                 name: baseName,
-                type: "filter_tile_does_not_have_value",
+                type: newRuleType.value,
                 active: true,
                 node_id: null,
                 nodegroup_id: null,

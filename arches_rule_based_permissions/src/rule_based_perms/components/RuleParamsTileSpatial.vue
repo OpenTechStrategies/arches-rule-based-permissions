@@ -2,11 +2,11 @@
 import { computed, inject } from "vue";
 import { useGettext } from "vue3-gettext";
 
-import InputText from "primevue/inputtext";
 import MultiSelect from "primevue/multiselect";
 import Select from "primevue/select";
 import Textarea from "primevue/textarea";
 
+import MapResourcePicker from "@/rule_based_perms/components/MapResourcePicker.vue";
 import { isEditingKey } from "@/rule_based_perms/constants.ts";
 import type { RuleConfig, SpatialParams } from "@/rule_based_perms/types.ts";
 
@@ -65,21 +65,14 @@ const geojsonText = computed({
         </div>
 
         <div class="form-field">
-            <label for="sp-resource-id">{{ $gettext("Resource Instance ID") }}</label>
-            <InputText
-                id="sp-resource-id"
+            <label>{{ $gettext("Resource") }}</label>
+            <MapResourcePicker
                 v-model="params.resource_instance_id"
-                :placeholder="$gettext('Optional: use geometry from this resource')"
-                style="width: 100%"
-                aria-describedby="sp-resource-id-hint"
                 @update:model-value="setIsEditing(true)"
             />
-            <small id="sp-resource-id-hint" class="hint">{{
-                $gettext("When set, the GeoJSON below is ignored.")
-            }}</small>
         </div>
 
-        <div class="form-field">
+        <div v-if="!params.resource_instance_id" class="form-field">
             <label for="sp-geojson">{{ $gettext("GeoJSON") }}</label>
             <Textarea
                 id="sp-geojson"
