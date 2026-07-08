@@ -36,7 +36,7 @@ const { selectedRule } = inject<{
     selectedRule: Ref<RuleConfig>;
 }>( selectedRuleKey)!;
 
-const { setIsEditing } = inject<{
+const { isEditing, setIsEditing } = inject<{
     isEditing: Ref<boolean>;
     setIsEditing: (val: boolean) => void;
 }>(isEditingKey)!;
@@ -206,6 +206,7 @@ function handleCancel() {
             <Button
                 :label="$gettext('Save')"
                 :loading="isSaving"
+                :disabled="!isEditing"
                 @click="handleSave"
             />
             <Button
